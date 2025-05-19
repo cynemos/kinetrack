@@ -1,6 +1,5 @@
-À propos
-KinéTrack
-Version 1.0.0
+KinéTrack - Version 1.0.0
+
 KinéTrack est une application professionnelle conçue spécifiquement pour les kinésithérapeutes, offrant une solution complète pour la gestion des patients et le suivi des consultations. Développée en étroite collaboration avec des praticiens, elle intègre les meilleures pratiques du secteur et les dernières avancées technologiques.
 
 Fonctionnalités principales
