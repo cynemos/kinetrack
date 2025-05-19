@@ -4,7 +4,7 @@ import { useFirebase } from '../contexts/FirebaseContext';
 import { doc, getDoc, collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import {
   User, Edit, Calendar, Phone, Mail,
-  ClipboardList, Plus, ChevronRight, Info,
+  ClipboardList, Plus, ChevronRight, Info, Trash2,
   Stethoscope, FileEdit, Eye, ArrowLeft,
 } from 'lucide-react';
 import AnatomicalDiagram from '../components/AnatomicalDiagram';
@@ -49,6 +49,7 @@ const PatientDetail: React.FC = () => {
   const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
   const navigate = useNavigate();
   const { db } = useFirebase();
   
@@ -165,6 +166,16 @@ const PatientDetail: React.FC = () => {
       return technique;
     }
     return technique.name;
+  };
+
+  const handleDeleteConsultation = async (consultationId: string) => {
+    try {
+      await deleteDoc(doc(db, 'consultations', consultationId));
+      setConsultations(prev => prev.filter(c => c.id !== consultationId));
+      setDeleteConfirmation(null);
+    } catch (error) {
+      console.error('Error deleting consultation:', error);
+    }
   };
 
   if (loading) {
@@ -355,6 +366,49 @@ const PatientDetail: React.FC = () => {
                           >
                             <Eye className="w-5 h-5" />
                           </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/patients/${id}/consultation/${consultation.id}`);
+                            }}
+                            className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Modifier"
+                          >
+                            <FileEdit className="w-5 h-5" />
+                          </button>
+                          {deleteConfirmation === consultation.id ? (
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteConsultation(consultation.id);
+                                }}
+                                className="text-red-600 hover:text-red-800 text-xs font-medium"
+                              >
+                                Confirmer
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteConfirmation(null);
+                                }}
+                                className="text-gray-600 hover:text-gray-800 text-xs font-medium"
+                              >
+                                Annuler
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteConfirmation(consultation.id);
+                              }}
+                              className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                       
