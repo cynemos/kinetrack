@@ -1,15 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Stethoscope } from 'lucide-react';
+import { Stethoscope, ArrowRight } from 'lucide-react';
+
+interface LoginFormData {
+  email: string;
+  password: string;
+  confirmPassword?: string;
+}
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,10 +33,23 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
+      if (isRegistering) {
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Les mots de passe ne correspondent pas');
+        }
+        await register(formData.email, formData.password);
+      } else {
+        await login(formData.email, formData.password);
+      }
       navigate('/');
     } catch (err) {
-      setError('Échec de connexion. Veuillez vérifier vos identifiants.');
+      if (err instanceof Error) {
+        setError(err.message === 'Les mots de passe ne correspondent pas' 
+          ? err.message 
+          : isRegistering 
+            ? 'Échec de l\'inscription. Veuillez réessayer.'
+            : 'Échec de connexion. Veuillez vérifier vos identifiants.');
+      }
       setLoading(false);
     }
   };
@@ -35,7 +64,9 @@ const Login: React.FC = () => {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-800">KinéTrack</h1>
-          <p className="text-gray-600 mt-2">Connexion à votre espace praticien</p>
+          <p className="text-gray-600 mt-2">
+            {isRegistering ? 'Créer un compte praticien' : 'Connexion à votre espace praticien'}
+          </p>
         </div>
 
         {error && (
@@ -51,9 +82,10 @@ const Login: React.FC = () => {
             </label>
             <input
               id="email"
+              name="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
               placeholder="votre@email.com"
@@ -66,14 +98,33 @@ const Login: React.FC = () => {
             </label>
             <input
               id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
               placeholder="••••••••"
             />
           </div>
+
+          {isRegistering && (
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Confirmer le mot de passe
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors"
+                placeholder="••••••••"
+              />
+            </div>
+          )}
 
           <button
             type="submit"
@@ -82,7 +133,16 @@ const Login: React.FC = () => {
               loading ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? (isRegistering ? 'Inscription...' : 'Connexion...') : (isRegistering ? 'S\'inscrire' : 'Se connecter')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsRegistering(!isRegistering)}
+            className="mt-4 w-full flex items-center justify-center text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <span>{isRegistering ? 'Déjà inscrit ? Se connecter' : 'Créer un compte'}</span>
+            <ArrowRight className="w-4 h-4 ml-2" />
           </button>
         </form>
 
