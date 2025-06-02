@@ -2,12 +2,38 @@ import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Users, LogOut, Menu, X, Calendar, HelpCircle, Info, BarChart3, FileText, Euro, Settings, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useFirebase } from '../contexts/FirebaseContext';
+import { useState, useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
 
 const Layout: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [profileData, setProfileData] = useState<{ firstName: string; lastName: string } | null>(null);
   const { currentUser, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { db } = useFirebase();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!currentUser?.uid) return;
+
+      try {
+        const profileDoc = await getDoc(doc(db, 'profiles', currentUser.uid));
+        if (profileDoc.exists()) {
+          const data = profileDoc.data();
+          setProfileData({
+            firstName: data.firstName || '',
+            lastName: data.lastName || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+
+    fetchProfile();
+  }, [db, currentUser]);
 
   const handleLogout = async () => {
     try {
@@ -39,7 +65,7 @@ const Layout: React.FC = () => {
           {currentUser && (
             <div className="flex items-center space-x-2">
               <span className="hidden md:inline text-sm">
-                {currentUser.email}
+                {profileData ? `${profileData.firstName} ${profileData.lastName}` : currentUser.email}
               </span>
               <button
                 onClick={handleLogout}
