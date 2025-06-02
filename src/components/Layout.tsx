@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Users, LogOut, Menu, X, Calendar, HelpCircle, Info, BarChart3, FileText, Euro, Settings } from 'lucide-react';
+import { Home, Users, LogOut, Menu, X, Calendar, HelpCircle, Info, BarChart3, FileText, Euro, Settings, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Layout: React.FC = () => {
@@ -188,6 +188,22 @@ const Layout: React.FC = () => {
                 >
                   <Settings size={20} />
                   <span>Paramètres</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    navigate('/profile');
+                    setIsMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md transition-colors ${
+                    isActive('/profile') 
+                      ? 'bg-teal-50 text-teal-700' 
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  <User size={20} />
+                  <span>Profil</span>
                 </button>
               </li>
             </ul>

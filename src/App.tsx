@@ -20,6 +20,7 @@ import Settings from './pages/Settings';
 import FinancialDashboard from './pages/FinancialDashboard';
 import Statistics from './pages/Statistics';
 import Calendar from './pages/Calendar';
+import Profile from './pages/Profile';
 
 // Components
 import Layout from './components/Layout';
@@ -63,6 +64,7 @@ function App() {
               <Route path="about" element={<About />} />
               <Route path="settings" element={<Settings />} />
               <Route path="financial" element={<FinancialDashboard />} />
+              <Route path="profile" element={<Profile />} />
             </Route>
           </Routes>
         </AuthProvider>
